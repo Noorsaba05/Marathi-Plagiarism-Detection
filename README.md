@@ -55,6 +55,5 @@ pip install -r requirements.txt
 
 **Noorsaba Shaikh**
 📧 noorsabashaikh03@gmail.com
-🔗 [GitHub](https://github.com/Noorsaba05) | [LinkedIn](https://www.linkedin.com/in/noorsaba-shaikh-2949682b1)
-
+🔗 [GitHub](https://github.com/Noorsaba05) 
 *Research guided by Dr. Rucha Samant.*
