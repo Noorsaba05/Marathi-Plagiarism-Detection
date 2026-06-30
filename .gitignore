@@ -1,0 +1,57 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# --- Virtual environments ---
+venv/
+env/
+ENV/
+.venv/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+*.swp
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+
+# --- Environment variables / secrets ---
+.env
+*.key
+secrets.json
+config_local.py
+
+# --- Model weights & large files (download separately, don't commit) ---
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.onnx
+*.safetensors
+models/
+checkpoints/
+*.faiss
+*.index
+
+# --- Large datasets ---
+data/raw/
+data/full/
+*.csv
+!sample_data/*.csv
+*.zip
+*.tar.gz
+
+# --- Logs / output ---
+*.log
+logs/
+output/
+results/*.json

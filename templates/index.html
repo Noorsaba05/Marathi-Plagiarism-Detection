@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marathi Plagiarism Detector</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        header {
+            background: #1a237e;
+            color: white;
+            padding: 20px 40px;
+        }
+
+        header h1 { font-size: 22px; }
+        header p  { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .card h2 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #1a237e;
+            border-bottom: 2px solid #e8eaf6;
+            padding-bottom: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 15px;
+            font-family: Arial, sans-serif;
+            resize: vertical;
+        }
+
+        button {
+            background: #1a237e;
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        button:hover { background: #283593; }
+        button:disabled { background: #9fa8da; cursor: not-allowed; }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .summary-box {
+            background: #f8f9ff;
+            border: 1px solid #e8eaf6;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .summary-box .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a237e;
+        }
+
+        .summary-box .label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .sentence-item {
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 14px;
+            margin-bottom: 10px;
+        }
+
+        .sentence-item.flagged {
+            border-left: 4px solid #e53935;
+            background: #fff8f8;
+        }
+
+        .sentence-item.suspicious {
+            border-left: 4px solid #fb8c00;
+            background: #fffbf5;
+        }
+
+        .sentence-item.original {
+            border-left: 4px solid #43a047;
+            background: #f8fff8;
+        }
+
+        .sentence-text {
+            font-size: 15px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .sentence-meta {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .badge.high   { background: #ffebee; color: #c62828; }
+        .badge.medium { background: #fff3e0; color: #e65100; }
+        .badge.low    { background: #e8f5e9; color: #2e7d32; }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            display: none;
+        }
+
+        #results { display: none; }
+
+        .verdict-banner {
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .verdict-high   { background: #ffebee; color: #c62828; }
+        .verdict-medium { background: #fff3e0; color: #e65100; }
+        .verdict-low    { background: #e8f5e9; color: #2e7d32; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Marathi Plagiarism Detection System</h1>
+    <p>Hybrid Semantic and Cross-Language Detection</p>
+</header>
+
+<div class="container">
+
+    <!-- Input Card -->
+    <!-- Input Card -->
+    <div class="card">
+        <h2>Submit Marathi Text for Analysis</h2>
+
+        <!-- Tab switcher -->
+        <div style="display:flex; gap:10px; margin-bottom:16px;">
+            <button onclick="switchTab('text')" id="tabText"
+                style="background:#1a237e; color:white; padding:8px 20px;
+                       border:none; border-radius:6px; cursor:pointer;">
+                Paste Text
+            </button>
+            <button onclick="switchTab('file')" id="tabFile"
+                style="background:#e8eaf6; color:#1a237e; padding:8px 20px;
+                       border:none; border-radius:6px; cursor:pointer;">
+                Upload File (PDF/DOCX)
+            </button>
+        </div>
+
+        <!-- Text input -->
+        <div id="textInput">
+            <textarea id="inputText"
+                placeholder="येथे मराठी मजकूर टाका... (Paste Marathi text here)"></textarea>
+            <br>
+            <button onclick="checkPlagiarism()" id="submitBtn">
+                Check for Plagiarism
+            </button>
+        </div>
+
+        <!-- File upload -->
+        <div id="fileInput" style="display:none;">
+            <div style="border:2px dashed #9fa8da; border-radius:8px;
+                        padding:40px; text-align:center; background:#f8f9ff;">
+                <p style="color:#666; margin-bottom:16px;">
+                    Upload a PDF or DOCX file containing Marathi academic text
+                </p>
+                <input type="file" id="fileUpload"
+                       accept=".pdf,.docx,.doc,.txt"
+                       style="margin-bottom:12px;">
+                <br>
+                <button onclick="uploadFile()" id="uploadBtn">
+                    Upload and Check
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <p>⏳ Analyzing text... Please wait.</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results">
+
+        <div class="card">
+            <h2>Document Summary</h2>
+            <div id="verdictBanner" class="verdict-banner"></div>
+            <div class="summary-grid">
+                <div class="summary-box">
+                    <div class="value" id="totalSentences">—</div>
+                    <div class="label">Total Sentences</div>
+                </div>
+                <div class="summary-box">
+                    <div class="value" id="flaggedSentences">—</div>
+                    <div class="label">Flagged Sentences</div>
+                </div>
+                <div class="summary-box">
+                    <div class="value" id="plagPercent">—</div>
+                    <div class="label">Plagiarism %</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Sentence-Level Analysis (XAI Report)</h2>
+            <div id="sentenceList"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+async function checkPlagiarism() {
+    const text = document.getElementById('inputText').value.trim();
+    if (!text) {
+        alert('Please enter some Marathi text.');
+        return;
+    }
+
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('results').style.display = 'none';
+
+    try {
+        const response = await fetch('/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text, filename: 'manual_input' })
+        });
+
+        const report = await response.json();
+        displayResults(report);
+
+    } catch (error) {
+        alert('Error: ' + error.message);
+    } finally {
+        document.getElementById('submitBtn').disabled = false;
+        document.getElementById('loading').style.display = 'none';
+    }
+}
+
+function displayResults(report) {
+    // Summary
+    document.getElementById('totalSentences').textContent =
+        report.total_sentences;
+    document.getElementById('flaggedSentences').textContent =
+        report.flagged_sentences;
+    document.getElementById('plagPercent').textContent =
+        report.plagiarism_percentage + '%';
+
+    // Verdict banner
+    const banner = document.getElementById('verdictBanner');
+    banner.textContent = report.document_verdict;
+    const pct = report.plagiarism_percentage;
+    banner.className = 'verdict-banner ' +
+        (pct >= 40 ? 'verdict-high' :
+         pct >= 20 ? 'verdict-medium' : 'verdict-low');
+
+    // Sentence list
+    const list = document.getElementById('sentenceList');
+    list.innerHTML = '';
+
+    report.sentence_scores.forEach((s, i) => {
+        const score = s.final_score;
+        const isHigh   = score >= 0.82;
+        const isMid    = score >= 0.65 && score < 0.82;
+
+        const div = document.createElement('div');
+        div.className = 'sentence-item ' +
+            (isHigh ? 'flagged' : isMid ? 'suspicious' : 'original');
+
+        const badgeClass = isHigh ? 'high' : isMid ? 'medium' : 'low';
+
+        div.innerHTML = `
+            <span class="badge ${badgeClass}">${s.verdict}</span>
+            <div class="sentence-text">${s.sentence}</div>
+            <div class="sentence-meta">
+                <strong>Final Score:</strong> ${score} &nbsp;|&nbsp;
+                <strong>Mono:</strong> ${s.monolingual_score} &nbsp;|&nbsp;
+                <strong>Cross:</strong> ${s.cross_lang_score}
+                ${s.matched_source ?
+                    `<br><strong>Matched:</strong> ${s.matched_source}` : ''}
+                ${s.english_translation ?
+                    `<br><strong>Translation:</strong> ${s.english_translation}`:''}
+            </div>
+        `;
+        list.appendChild(div);
+    });
+
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('results').scrollIntoView({behavior: 'smooth'});
+}
+
+function switchTab(tab) {
+    if (tab === 'text') {
+        document.getElementById('textInput').style.display = 'block';
+        document.getElementById('fileInput').style.display = 'none';
+        document.getElementById('tabText').style.background = '#1a237e';
+        document.getElementById('tabText').style.color = 'white';
+        document.getElementById('tabFile').style.background = '#e8eaf6';
+        document.getElementById('tabFile').style.color = '#1a237e';
+    } else {
+        document.getElementById('textInput').style.display = 'none';
+        document.getElementById('fileInput').style.display = 'block';
+        document.getElementById('tabFile').style.background = '#1a237e';
+        document.getElementById('tabFile').style.color = 'white';
+        document.getElementById('tabText').style.background = '#e8eaf6';
+        document.getElementById('tabText').style.color = '#1a237e';
+    }
+}
+
+async function uploadFile() {
+    const fileInput = document.getElementById('fileUpload');
+    if (!fileInput.files.length) {
+        alert('Please select a file first.');
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    document.getElementById('uploadBtn').disabled = true;
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('results').style.display = 'none';
+
+    try {
+        const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        const report = await response.json();
+
+        if (report.error) {
+            alert('Error: ' + report.error);
+            return;
+        }
+
+        displayResults(report);
+
+    } catch (error) {
+        alert('Error: ' + error.message);
+    } finally {
+        document.getElementById('uploadBtn').disabled = false;
+        document.getElementById('loading').style.display = 'none';
+    }
+}
+
+</script>
+
+</body>
+</html>
