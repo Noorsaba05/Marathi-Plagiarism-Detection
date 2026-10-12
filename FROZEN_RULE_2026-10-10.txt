@@ -1,0 +1,34 @@
+FROZEN DECISION RULE
+Written: 2026-10-10, before any hold-out item is generated or scored.
+Repo: github.com/Noorsaba05/Marathi-Plagiarism-Detection, commit 056479a.
+
+1. Model and thresholds (unchanged from config.py, not tuned)
+   Embedding model: l3cube-pune/marathi-sentence-bert-nli
+   Monolingual threshold: 0.80    Cross-language threshold: 0.75
+
+2. Sentence-level rule (primary): flag a sentence if mono >= 0.80 OR cross >= 0.75.
+   Comparison rule: the application's blended rule (cross < 0.6 -> mono;
+   otherwise 0.6*mono + 0.4*cross; flag at >= 0.80).
+
+3. Paragraph-level rule
+   Primary: flag a paragraph if >= 50% of its sentences are flagged.
+   Also reported: flag if any sentence is flagged.
+
+4. Test settings (as in the development run)
+   Setting A (same-language): Marathi index = source sentences; English index = distractors only.
+   Setting B (cross-lingual): English index = source translations; own source removed from the Marathi index.
+   Each run with original and extended indexes (same 540 distractors).
+
+5. Metrics: recall per type, false positives on independents (Wilson 95% CI),
+   precision/recall/F1 for both classes, MCC, AUC with bootstrap 95% CI, top-1 source recovery.
+
+6. Hold-out protocol
+   Items are new paragraphs with IDs HO-*, from a thesis not used in development, built with the
+   same pipeline (generator: [name and version]) and labelled the same way.
+   They are scored once, with this rule and these thresholds.
+   No threshold, rule or aggregation is changed after seeing hold-out results.
+   Whatever the results are, they are reported.
+
+7. Status of the development results
+   The 211 development items (49 sources, 196 derived, 15 independents) are exploratory.
+   The preference for the >= 50% aggregation was made after seeing them.
